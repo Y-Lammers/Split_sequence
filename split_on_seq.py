@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Splits a file of fasta / fastq sequences on either the primer
 # or sequencing tags used (needs to be provided by the user)
 
@@ -13,6 +15,9 @@ parser.add_argument('-t', metavar='Tag file', type=str,
 			help='Enther the tag file')
 parser.add_argument('-m', metavar='Max mismatches', type=int,
 			help='The maximum number of mismatches and the sequence', default=0)
+parser.add_argument('-r', metavar='Remove tag', type=str,
+			help='Remove the tag from the sequence after filtering (yes/no)', default='no')
+
 args = parser.parse_args()
 
 def extract_sequence (seq_file):
@@ -43,7 +48,25 @@ def import_tags (tag_file):
 	# return the tag list
 	return tag_list
 
-def split (sequence_list, tag_list, max_mis):
+def levenshtein_distance (sequence, tag):
+
+        # calculate and return the levenshtein distance for the
+        # 2 sequences, code based on: http://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Levenshtein_distance
+
+        length = len(sequence)
+        current = range(length + 1)
+        for s in range(1, length + 1):
+                previous, current = current, [s]+[0]*length
+                for t in range(1, length + 1):
+                        add, delete, change = previous[t]+1, current[t-1]+1, previous[t-1]
+                        if tag[t-1] != sequence[s-1]:
+                                change = change + 1
+                        current[t] = min(add, delete, change)
+
+	#return the distance
+	return current[length]
+
+def split (sequence_list, tag_list, max_mis, remove):
 	
 	# split the sequence list based on the tags
 	split_dic = {}
@@ -57,27 +80,32 @@ def split (sequence_list, tag_list, max_mis):
 		for tag in tag_list:
 
 			# check if the sequence is longer than the tag, if not the sequence will be discarded
-			if len(seq.seq) <= len(tag_list[0][1]):
+			if len(seq.seq) <= len(tag[1]):
 				status = 'short'
 		
 			else:
-				pos, mis_count = 0, 0
+				# calculate the levenshtein distance between
+				# the sequence and the tag
+				mis_count = levenshtein_distance(seq.seq[:len(tag[1])],tag[1])
+				
+				#pos, mis_count = 0, 0
 			
 				# the tag and sequence are compared
 				# the match will be discared if there are to many
 				# mismatches between the tag and sequence
-				while pos < len(tag[1]):
-					if seq.seq[pos] != tag[1][pos]:
-						mis_count += 1
-						if mis_count > max_mis:
-							break
-					pos += 1
+				#while pos < len(tag[1]):
+				#	if seq.seq[pos] != tag[1][pos]:
+				#		mis_count += 1
+				#		if mis_count > max_mis:
+				#			break
+				#	pos += 1
 
 				# if the tag and sequence are similar they
 				# are stored in the dictionary under the tag
 				# dictionary key, the tag is removed from the sequence
 				if mis_count <= max_mis:
-					seq = seq[len(tag[1]):]
+					if remove == 'yes':
+						seq = seq[len(tag[1]):]
 					try:
 						split_dic[tag[0]].append(seq)
 					except:
@@ -120,7 +148,7 @@ def main ():
 	tags = import_tags (args.t)
 
 	# split the sequence file based on the tags
-	split_dic = split(seq_type[0], tags, args.m)
+	split_dic = split(seq_type[0], tags, args.m, args.r)
 	
 	# write the split results to seperate files
 	write_seqs (split_dic, seq_type[1], args.i)
