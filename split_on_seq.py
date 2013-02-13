@@ -88,21 +88,11 @@ def split (sequence_list, tag_list, max_mis, remove):
 				# the sequence and the tag
 				mis_count = levenshtein_distance(seq.seq[:len(tag[1])],tag[1])
 				
-				#pos, mis_count = 0, 0
-			
-				# the tag and sequence are compared
-				# the match will be discared if there are to many
-				# mismatches between the tag and sequence
-				#while pos < len(tag[1]):
-				#	if seq.seq[pos] != tag[1][pos]:
-				#		mis_count += 1
-				#		if mis_count > max_mis:
-				#			break
-				#	pos += 1
-
 				# if the tag and sequence are similar they
-				# are stored in the dictionary under the tag
-				# dictionary key, the tag is removed from the sequence
+				# are stored in the dictionary with the tag as a
+				# dictionary key.
+				# The tag is removed from the sequence if the
+				# -r parameter is set to yes
 				if mis_count <= max_mis:
 					if remove == 'yes':
 						seq = seq[len(tag[1]):]
