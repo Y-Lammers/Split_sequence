@@ -117,6 +117,7 @@ def split (sequence_list, tag_list, max_mis, remove):
 
 def write_seqs (sorted_seq_dic, file_format, file_dir):
 	# import the Biopython module for sequence handling
+	# and the os.path module to set the output directory
 	from Bio import SeqIO
 	import os.path
 	
