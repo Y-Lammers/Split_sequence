@@ -43,7 +43,7 @@ def import_tags (tag_file):
 	
 	# parse through the comma seperated value file and save
 	# the tag sequences in a list
-	tag_list = [line.replace('\n','').split(',') for line in open(tag_file, 'r')]
+	tag_list = [line.strip().split(',') for line in open(tag_file, 'r')]
 
 	# return the tag list
 	return tag_list
@@ -80,7 +80,7 @@ def split (sequence_list, tag_list, max_mis, remove):
 		for tag in tag_list:
 
 			# check if the sequence is longer than the tag, if not the sequence will be discarded
-			if len(seq.seq) <= len(tag[1]):
+			if len(seq.seq) <= len(tag[1].strip()):
 				status = 'short'
 		
 			else:
@@ -122,15 +122,16 @@ def write_seqs (sorted_seq_dic, file_format, file_dir):
 	import os.path
 	
 	out_direc = os.path.split(file_dir)[0]
+	if len(out_direc) != 0 and out_direc[-1] != '/': out_direc += '/'
 
 	# for each tag write a seperate file
 	for tag in sorted_seq_dic:
 
-		out_file = open(out_direc + '/' + tag + '.' + file_format, 'w')
+		out_file = open(out_direc + tag + '.' + file_format, 'w')
 		SeqIO.write(sorted_seq_dic[tag], out_file, file_format)
 		out_file.close()
 
-def main ():	
+def main ():
 	
 	# get the sequence dictionary and file type
 	seq_type = extract_sequence(args.i)
