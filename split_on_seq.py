@@ -116,6 +116,7 @@ def split (sequence_list, tag_list, max_mis, remove):
 	return split_dic
 
 def write_seqs (sorted_seq_dic, file_format, file_dir):
+	
 	# import the Biopython module for sequence handling
 	# and the os.path module to set the output directory
 	from Bio import SeqIO
@@ -124,7 +125,7 @@ def write_seqs (sorted_seq_dic, file_format, file_dir):
 	out_direc = os.path.split(file_dir)[0]
 	if len(out_direc) != 0 and out_direc[-1] != '/': out_direc += '/'
 
-	# for each tag write a seperate file
+	# for each tag present write a seperate file
 	for tag in sorted_seq_dic:
 
 		out_file = open(out_direc + tag + '.' + file_format, 'w')
